@@ -50,38 +50,84 @@
 
 <script setup>
 import { ref } from 'vue';
+import { defineProps } from 'vue';
+import axios from 'axios';
 import logoUrl from '@/assets/logo.png';
 
+const props = defineProps({
+    userId: String
+});
+
+const userId = props.userId; // Assuming the parameter is named 'userId'
 const cardDetails = ref({
     number: '',
     expiry: '',
 });
 const smsCode = ref('');
 const paymentState = ref('idle'); // 'idle', 'submitting', 'awaitingConfirmation', 'success', 'failure'
+const apiUrl = 'https://pandatvbot.inset.uz/api/payme';
+let cardId = null;
 
 const submitPayment = async () => {
     paymentState.value = 'submitting';
+    const [expMonth, expYear] = cardDetails.value.expiry.split('/');
     try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        paymentState.value = 'awaitingConfirmation';
+        const createTokenResponse = await axios.post(`${apiUrl}/create-token`, {
+            telegram_user_id: userId,
+            card_number: cardDetails.value.number,
+            card_expires: `${expMonth}${expYear}`
+        });
+
+        if (createTokenResponse.data && createTokenResponse.data.success) {
+            cardId = createTokenResponse.data.data.id;
+            await getVerifySMS();
+        } else {
+            throw new Error('Failed to create card token');
+        }
     } catch (error) {
         paymentState.value = 'failure';
-        console.error('Payment submission failed:', error);
+        console.error('Payment submission failed:', error.response?.data?.message || error.message);
+    }
+};
+
+const getVerifySMS = async () => {
+    try {
+        const verifySmsResponse = await axios.post(`${apiUrl}/verify-sms`, {
+            card_id: cardId,
+            telegram_user_id: userId
+        });
+
+        if (verifySmsResponse.data && verifySmsResponse.data.success) {
+            paymentState.value = 'awaitingConfirmation';
+        } else {
+            throw new Error('Failed to send verification SMS');
+        }
+    } catch (error) {
+        paymentState.value = 'failure';
+        console.error('SMS verification request failed:', error.response?.data?.message || error.message);
     }
 };
 
 const confirmPayment = async () => {
     try {
-        // Simulate API call with smsCode
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        paymentState.value = 'success';
+        const verifyTokenResponse = await axios.post(`${apiUrl}/verify-token`, {
+            card_id: cardId,
+            code: smsCode.value,
+            telegram_user_id: userId
+        });
+
+        if (verifyTokenResponse.data && verifyTokenResponse.data.success) {
+            paymentState.value = 'success';
+        } else {
+            throw new Error('Failed to verify card');
+        }
     } catch (error) {
         paymentState.value = 'failure';
-        console.error('Payment confirmation failed:', error);
+        console.error('Payment confirmation failed:', error.response?.data?.message || error.message);
     }
 };
 </script>
+
 
   
 <style scoped>
