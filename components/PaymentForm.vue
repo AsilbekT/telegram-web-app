@@ -6,15 +6,22 @@
         <form @submit.prevent="submitPayment" class="payment-form"
             v-if="paymentState === 'idle' || paymentState === 'submitting'">
             <div class="form-group">
-                <input v-model="cardDetails.number" type="text" placeholder="Card Number" class="input-field" v-maska data-maska="#### #### #### ####"
-                    autocomplete="cc-number" />
+                <input v-model="cardDetails.number" type="text" placeholder="Card Number" class="input-field" v-maska
+                    data-maska="#### #### #### ####" autocomplete="cc-number" />
             </div>
             <div class="form-group">
-                <input v-model="cardDetails.expiry" type="text" placeholder="Expiry MM/YY" class="input-field" v-maska data-maska="##/##"
-                    autocomplete="cc-exp" />
+                <input v-model="cardDetails.expiry" type="text" placeholder="Expiry MM/YY" class="input-field" v-maska
+                    data-maska="##/##" autocomplete="cc-exp" />
             </div>
             <div class="form-group">
-                <button type="submit" class="submit-btn" :disabled="paymentState === 'submitting'">To'lash</button>
+                <button type="submit" class="submit-btn disabled" disabled v-if="paymentState === 'submitting'" >
+                    <img src="~/assets/loader.svg" alt="">
+                    Yuklanmoqda
+                </button>
+                <button type="submit" class="submit-btn" v-else>
+                   To'lash
+                </button>
+                
             </div>
         </form>
         <div v-if="paymentState === 'awaitingConfirmation'" class="confirmation-container">
@@ -74,7 +81,7 @@ const submitPayment = async () => {
     try {
         const createTokenResponse = await axios.post(`${apiUrl}/create-token`, {
             telegram_user_id: userId,
-            card_number: cardDetails.value.number.replace(/\s/g,''),
+            card_number: cardDetails.value.number.replace(/\s/g, ''),
             card_expires: `${expMonth}${expYear}`
         });
 
@@ -131,9 +138,10 @@ const confirmPayment = async () => {
 
   
 <style scoped>
-*{
+* {
     box-sizing: border-box;
 }
+
 .logo-container {
     text-align: center;
     margin-bottom: 20px;
@@ -201,6 +209,11 @@ const confirmPayment = async () => {
     transition: background-color 0.3s, transform 0.3s ease-in-out;
 }
 
+.submit-btn.disabled{
+    padding: 3px 15px;
+    opacity: .8;
+    cursor: not-allowed;
+}
 .submit-btn:hover {
     background-color: #0056b3;
     transform: translateY(-2px);
@@ -241,8 +254,15 @@ const confirmPayment = async () => {
 
 .submit-btn {
     position: relative;
-    overflow: hidden;
     transition: color 0.4s, background-color 0.4s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.submit-btn img {
+    /* width: 32px; */
+    height: 29.5px;
 }
 
 .submit-btn::after {
