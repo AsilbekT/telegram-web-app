@@ -6,11 +6,11 @@
         <form @submit.prevent="submitPayment" class="payment-form"
             v-if="paymentState === 'idle' || paymentState === 'submitting'">
             <div class="form-group">
-                <input v-model="cardDetails.number" type="text" placeholder="Card Number" class="input-field"
+                <input v-model="cardDetails.number" type="text" placeholder="Card Number" class="input-field" v-maska data-maska="#### #### #### ####"
                     autocomplete="cc-number" />
             </div>
             <div class="form-group">
-                <input v-model="cardDetails.expiry" type="text" placeholder="Expiry MM/YY" class="input-field"
+                <input v-model="cardDetails.expiry" type="text" placeholder="Expiry MM/YY" class="input-field" v-maska data-maska="##/##"
                     autocomplete="cc-exp" />
             </div>
             <div class="form-group">
@@ -74,7 +74,7 @@ const submitPayment = async () => {
     try {
         const createTokenResponse = await axios.post(`${apiUrl}/create-token`, {
             telegram_user_id: userId,
-            card_number: cardDetails.value.number,
+            card_number: cardDetails.value.number.replace(/\s/g,''),
             card_expires: `${expMonth}${expYear}`
         });
 
@@ -131,6 +131,9 @@ const confirmPayment = async () => {
 
   
 <style scoped>
+*{
+    box-sizing: border-box;
+}
 .logo-container {
     text-align: center;
     margin-bottom: 20px;
@@ -143,6 +146,7 @@ const confirmPayment = async () => {
 }
 
 .payment-form-container {
+    width: 100%;
     max-width: 480px;
     max-height: 100vh;
     /* Limit the height to viewport height */
