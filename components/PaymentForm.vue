@@ -1,22 +1,25 @@
 <template>
     <div class="payment-form-container">
-        <form @submit.prevent="submitPayment" class="payment-form">
+        <form @submit.prevent="submitPayment" class="payment-form" autocomplete="on">
             <div class="form-group">
-                <input v-model="cardDetails.number" type="text" placeholder="Card Number" />
+                <input v-model="cardDetails.number" type="text" placeholder="Card Number" class="input-field"
+                    autocomplete="cc-number" />
             </div>
             <div class="form-group">
-                <input v-model="cardDetails.expiry" type="text" placeholder="Expiry MM/YY" />
+                <input v-model="cardDetails.expiry" type="text" placeholder="Expiry MM/YY" class="input-field"
+                    autocomplete="cc-exp" />
             </div>
             <div class="form-group">
-                <input v-model="cardDetails.cvv" type="password" placeholder="CVV" />
+                <input v-model="cardDetails.cvv" type="password" placeholder="CVV" class="input-field"
+                    autocomplete="cc-csc" />
             </div>
             <div class="form-group">
-                <button type="submit">Submit Payment</button>
+                <button type="submit" class="submit-btn">Submit Payment</button>
             </div>
         </form>
     </div>
 </template>
-  
+
 <script setup>
 import { ref } from 'vue';
 
@@ -32,15 +35,22 @@ const submitPayment = () => {
     // You will call your backend API here
 };
 </script>
+
   
 <style scoped>
 .payment-form-container {
     max-width: 480px;
-    margin: 0 auto;
-    padding: 20px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
+    margin: 20px auto;
+    padding: 30px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
     background: white;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.payment-form-container:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
 }
 
 .payment-form {
@@ -49,28 +59,36 @@ const submitPayment = () => {
 }
 
 .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 }
 
-.form-group input {
+.input-field {
     width: 100%;
-    padding: 10px;
+    padding: 12px 15px;
     border: 1px solid #ccc;
     border-radius: 5px;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease-in-out;
 }
 
-.form-group button {
-    padding: 10px 20px;
+.input-field:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+.submit-btn {
+    padding: 12px 20px;
     background-color: #007bff;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: background-color 0.3s, transform 0.3s ease-in-out;
 }
 
-.form-group button:hover {
+.submit-btn:hover {
     background-color: #0056b3;
+    transform: translateY(-2px);
 }
 </style>
   
