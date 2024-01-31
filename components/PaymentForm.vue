@@ -18,12 +18,11 @@
             </div>
         </form>
         <div v-if="paymentState === 'awaitingConfirmation'" class="confirmation-container">
-            <p>Please enter the SMS code sent to your phone.</p>
+            <p class="confirmation-instruction">Please enter the SMS code sent to your phone.</p>
             <div class="input-group">
                 <input v-model="smsCode" type="text" placeholder="SMS Code" class="input-field sms-input" />
                 <button @click="confirmPayment" class="submit-btn confirm-btn">
-                    <span class="btn-text">Confirm Payment</span>
-                    <span class="icon"><i class="fas fa-check"></i></span>
+                    <span class="btn-text">Confirm</span>
                 </button>
             </div>
         </div>
@@ -93,19 +92,24 @@ const confirmPayment = async () => {
 
 .logo {
     max-width: 100%;
-    /* Ensures the logo is responsive and fits within the container */
     height: auto;
     border-radius: 5px;
-    /* Optional: rounds the corners of the logo */
 }
 
 .payment-form-container {
     max-width: 480px;
+    max-height: 100vh;
+    /* Limit the height to viewport height */
     margin: 20px auto;
-    padding: 30px;
+    padding: 20px;
+    overflow-y: auto;
+    /* Allow internal scrolling */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     border-radius: 10px;
     background: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 }
 
@@ -124,8 +128,8 @@ const confirmPayment = async () => {
 }
 
 .input-field {
-    width: 80%;
-    padding: 12px 15px;
+    width: 100%;
+    padding: 10px 15px;
     border: 1px solid #ccc;
     border-radius: 5px;
     box-sizing: border-box;
@@ -138,7 +142,7 @@ const confirmPayment = async () => {
 }
 
 .submit-btn {
-    padding: 12px 20px;
+    padding: 10px 15px;
     background-color: #007bff;
     color: white;
     border: none;
@@ -158,55 +162,79 @@ const confirmPayment = async () => {
     background-color: #f9f9f9;
     border-radius: 5px;
     margin-top: 20px;
+    box-sizing: border-box;
+}
+
+.confirmation-instruction {
+    margin-bottom: 15px;
+    color: #333;
 }
 
 .input-group {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
 .sms-input {
-    margin-right: 10px;
     flex-grow: 1;
-    /* Takes the available space */
+    max-width: calc(100% - 120px);
 }
 
 .confirm-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    padding: 10px 15px;
+    min-width: 100px;
+    box-sizing: border-box;
 }
 
-.btn-text {
-    margin-right: 10px;
+.submit-btn {
+    position: relative;
+    overflow: hidden;
+    transition: color 0.4s, background-color 0.4s;
 }
 
-.icon {
-    display: inline-block;
+.submit-btn::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #0056b3;
+    z-index: -1;
+    transition: transform 0.5s;
+    transform: scale(0);
+    transform-origin: center;
 }
 
-.instruction-text {
-    font-size: 0.9em;
-    color: #666;
-    margin-top: 10px;
+.submit-btn:hover::after {
+    transform: scale(2);
+    opacity: 0;
 }
 
-/* Optional: Add animation for the confirmation section to draw attention */
-.confirmation-container {
-    animation: fadeIn 0.5s ease-in-out;
+.submit-btn:active {
+    background-color: #004a9f;
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
+@media (max-width: 600px) {
+    .input-group {
+        flex-direction: column;
     }
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
+    .sms-input,
+    .confirm-btn {
+        max-width: 100%;
+    }
+
+    .confirm-btn {
+        margin-top: 10px;
+    }
+
+    .payment-form-container {
+        margin: 10px auto;
+        padding: 15px;
     }
 }
 
@@ -221,7 +249,6 @@ const confirmPayment = async () => {
 
 .message-icon {
     font-size: 3em;
-    /* Adjust size as needed */
     margin-right: 20px;
 }
 
@@ -234,14 +261,12 @@ const confirmPayment = async () => {
 .success {
     background-color: #e9f9e9;
     border-left: 5px solid #34a853;
-    /* Adjust color as needed */
     color: #34a853;
 }
 
 .failure {
     background-color: #fde8e9;
     border-left: 5px solid #ea4335;
-    /* Adjust color as needed */
     color: #ea4335;
 }
 
