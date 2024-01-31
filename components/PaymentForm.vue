@@ -13,12 +13,12 @@
                 <input v-model="cardDetails.expiry" type="text" placeholder="Expiry MM/YY" class="input-field"
                     autocomplete="cc-exp" />
             </div>
-            <div class="form-group">
+            <!-- <div class="form-group">
                 <input v-model="cardDetails.cvv" type="password" placeholder="CVV" class="input-field"
                     autocomplete="cc-csc" />
-            </div>
+            </div> -->
             <div class="form-group">
-                <button type="submit" class="submit-btn">Submit Payment</button>
+                <button type="submit" class="submit-btn">To'lash</button>
             </div>
         </form>
     </div>
@@ -31,7 +31,7 @@ import logoUrl from '@/assets/logo.png';
 const cardDetails = ref({
     number: '',
     expiry: '',
-    cvv: ''
+    // cvv: ''
 });
 
 const submitPayment = () => {
@@ -81,7 +81,7 @@ const submitPayment = () => {
 }
 
 .input-field {
-    width: 100%;
+    width: 80%;
     padding: 12px 15px;
     border: 1px solid #ccc;
     border-radius: 5px;
