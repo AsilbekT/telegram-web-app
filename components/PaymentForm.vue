@@ -1,5 +1,9 @@
 <template>
     <div class="payment-form-container">
+        <div class="logo-container">
+            <img src="/Users/asilbekturgunboev/Desktop/telegram-payment/public/logo.png" alt="Logo" class="logo" />
+            <!-- Update the src with your logo's path -->
+        </div>
         <form @submit.prevent="submitPayment" class="payment-form" autocomplete="on">
             <div class="form-group">
                 <input v-model="cardDetails.number" type="text" placeholder="Card Number" class="input-field"
@@ -38,6 +42,19 @@ const submitPayment = () => {
 
   
 <style scoped>
+.logo-container {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.logo {
+    max-width: 100%;
+    /* Ensures the logo is responsive and fits within the container */
+    height: auto;
+    border-radius: 5px;
+    /* Optional: rounds the corners of the logo */
+}
+
 .payment-form-container {
     max-width: 480px;
     margin: 20px auto;
