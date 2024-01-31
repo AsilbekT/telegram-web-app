@@ -1,7 +1,7 @@
 <template>
     <div class="payment-form-container">
         <div class="logo-container">
-            <img src="/Users/asilbekturgunboev/Desktop/telegram-payment/public/logo.png" alt="Logo" class="logo" />
+            <img :src="logoUrl" alt="Logo" class="logo" />
             <!-- Update the src with your logo's path -->
         </div>
         <form @submit.prevent="submitPayment" class="payment-form" autocomplete="on">
@@ -26,6 +26,7 @@
 
 <script setup>
 import { ref } from 'vue';
+import logoUrl from '@/assets/logo.png';
 
 const cardDetails = ref({
     number: '',
