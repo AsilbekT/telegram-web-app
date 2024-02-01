@@ -14,14 +14,14 @@
                     data-maska="##/##" autocomplete="cc-exp" />
             </div>
             <div class="form-group">
-                <button type="submit" class="submit-btn disabled" disabled v-if="paymentState === 'submitting'" >
+                <button type="submit" class="submit-btn disabled" disabled v-if="paymentState === 'submitting'">
                     <img src="~/assets/loader.svg" alt="">
                     Yuklanmoqda
                 </button>
                 <button type="submit" class="submit-btn" v-else>
-                   To'lash
+                    To'lash
                 </button>
-                
+
             </div>
         </form>
         <div v-if="paymentState === 'awaitingConfirmation'" class="confirmation-container">
@@ -75,6 +75,24 @@ const paymentState = ref('idle'); // 'idle', 'submitting', 'awaitingConfirmation
 const apiUrl = 'https://pandatvbot.inset.uz/api/payme';
 let cardId = null;
 
+const payForSubscription = async () => {
+    try {
+        const paymentResponse = await axios.post(`${apiUrl}/pay-subscription`, {
+            telegram_user_id: userId,
+            card_id: cardId,
+        });
+
+        if (paymentResponse.data && paymentResponse.data.success) {
+            paymentState.value = 'success';
+        } else {
+            throw new Error('Failed to process subscription payment');
+        }
+    } catch (error) {
+        paymentState.value = 'failure';
+        console.error('Subscription payment failed:', error.response?.data?.message || error.message);
+    }
+};
+
 const submitPayment = async () => {
     paymentState.value = 'submitting';
     const [expMonth, expYear] = cardDetails.value.expiry.split('/');
@@ -124,7 +142,7 @@ const confirmPayment = async () => {
         });
 
         if (verifyTokenResponse.data && verifyTokenResponse.data.success) {
-            paymentState.value = 'success';
+            await payForSubscription();
         } else {
             throw new Error('Failed to verify card');
         }
@@ -209,11 +227,12 @@ const confirmPayment = async () => {
     transition: background-color 0.3s, transform 0.3s ease-in-out;
 }
 
-.submit-btn.disabled{
+.submit-btn.disabled {
     padding: 3px 15px;
     opacity: .8;
     cursor: not-allowed;
 }
+
 .submit-btn:hover {
     background-color: #0056b3;
     transform: translateY(-2px);
