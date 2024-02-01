@@ -93,7 +93,7 @@ const cardDetails = ref({
 });
 const smsCode = ref('');
 const paymentProcess = ref({
-    step: 'idle', // 'idle', 'submitting', 'confirming' 'awaitingConfirmation', 'success', 'failure'
+    step: 'awaitingConfirmation', // 'idle', 'submitting', 'confirming' 'awaitingConfirmation', 'success', 'failure'
     errors: {
         createTokenError: '',
         verifySMSError: '',
@@ -224,7 +224,7 @@ const resendPayment = async () => {
 }
 
 .logo {
-    max-width: 100%;
+    max-width: 75%;
     height: auto;
     border-radius: 5px;
 }
