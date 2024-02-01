@@ -85,7 +85,7 @@ const payForSubscription = async () => {
         if (paymentResponse.data && paymentResponse.data.success) {
             paymentState.value = 'success';
         } else {
-            throw new Error('Failed to process subscription payment');
+            throw new Error(paymentResponse.data.message);
         }
     } catch (error) {
         paymentState.value = 'failure';
