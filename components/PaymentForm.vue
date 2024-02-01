@@ -72,7 +72,7 @@ const cardDetails = ref({
 });
 const smsCode = ref('');
 const paymentState = ref('idle'); // 'idle', 'submitting', 'awaitingConfirmation', 'success', 'failure'
-const apiUrl = 'https://pandatvbot.inset.uz/api/payme';
+const apiUrl = 'https://3623-178-218-200-88.ngrok-free.app/api/payme';
 let cardId = null;
 
 const payForSubscription = async () => {
