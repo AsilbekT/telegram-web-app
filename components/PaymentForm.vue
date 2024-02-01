@@ -93,7 +93,7 @@ const cardDetails = ref({
 });
 const smsCode = ref('');
 const paymentProcess = ref({
-    step: 'awaitingConfirmation', // 'idle', 'submitting', 'confirming' 'awaitingConfirmation', 'success', 'failure'
+    step: 'idle', // 'idle', 'submitting', 'confirming' 'awaitingConfirmation', 'success', 'failure'
     errors: {
         createTokenError: '',
         verifySMSError: '',
