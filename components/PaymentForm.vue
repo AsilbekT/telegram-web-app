@@ -85,7 +85,7 @@ const payForSubscription = async () => {
         if (paymentResponse.data && paymentResponse.data.success) {
             paymentState.value = 'success';
         } else {
-            throw new Error(paymentResponse.data.message);
+            throw new Error(paymentResponse.message);
         }
     } catch (error) {
         paymentState.value = 'failure';
