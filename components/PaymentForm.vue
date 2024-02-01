@@ -3,52 +3,74 @@
         <div class="logo-container">
             <img :src="logoUrl" alt="Logo" class="logo" />
         </div>
+
+        <!-- Payment Form -->
+        <p v-if="paymentProcess.errors.createTokenError" class="error-message">{{ paymentProcess.errors.createTokenError
+        }}</p>
         <form @submit.prevent="submitPayment" class="payment-form"
-            v-if="paymentState === 'idle' || paymentState === 'submitting'">
+            v-if="paymentProcess?.step === 'idle' || paymentProcess?.step === 'submitting'">
             <div class="form-group">
-                <input v-model="cardDetails.number" type="text" placeholder="Card Number" class="input-field" v-maska
+                <input v-model="cardDetails.number" type="text" placeholder="Karta raqami" class="input-field" v-maska
                     data-maska="#### #### #### ####" autocomplete="cc-number" />
             </div>
             <div class="form-group">
-                <input v-model="cardDetails.expiry" type="text" placeholder="Expiry MM/YY" class="input-field" v-maska
+                <input v-model="cardDetails.expiry" type="text" placeholder="MM/YY" class="input-field" v-maska
                     data-maska="##/##" autocomplete="cc-exp" />
             </div>
             <div class="form-group">
-                <button type="submit" class="submit-btn disabled" disabled v-if="paymentState === 'submitting'">
+                <button type="submit" class="submit-btn disabled" disabled v-if="paymentProcess?.step === 'submitting'">
                     <img src="~/assets/loader.svg" alt="">
                     Yuklanmoqda
                 </button>
                 <button type="submit" class="submit-btn" v-else>
                     To'lash
                 </button>
-
             </div>
+            <!-- Display error message for token creation step -->
+
         </form>
-        <div v-if="paymentState === 'awaitingConfirmation'" class="confirmation-container">
+
+        <!-- Confirmation Container -->
+        <div v-if="paymentProcess?.step === 'awaitingConfirmation' || paymentProcess?.step === 'confirming'"
+            class="confirmation-container">
             <p class="confirmation-instruction">Please enter the SMS code sent to your phone.</p>
             <div class="input-group">
-                <input v-model="smsCode" type="text" placeholder="SMS Code" class="input-field sms-input" />
-                <button @click="confirmPayment" class="submit-btn confirm-btn">
-                    <span class="btn-text">Confirm</span>
+                <input v-model="smsCode" type="text" placeholder="SMS Code" class="input-field sms-input" v-maska
+                    data-maska="######" autocomplete="cc-number" />
+                <button type="submit" class="submit-btn confirm-btn disabled" disabled
+                    v-if="paymentProcess?.step === 'confirming'">
+                    <img src="~/assets/loader.svg" alt="">
+                    Tasdiqlanyapti
+                </button>
+                <button @click="confirmPayment" class="submit-btn confirm-btn" v-else>
+                    Tasdiqlang
                 </button>
             </div>
+            <!-- Display error message for SMS verification step -->
+            <p v-if="paymentProcess.errors.verifySMSError" class="error-message">{{ paymentProcess.errors.verifySMSError }}
+            </p>
         </div>
-        <div v-if="paymentState === 'success'" class="message-container success">
+
+        <!-- Success Message Container -->
+        <div v-if="paymentProcess?.step === 'success'" class="message-container success">
             <div class="message-icon">
                 <i class="fas fa-check-circle"></i> <!-- Success icon -->
             </div>
             <div class="message-content">
-                <h4>Payment Successful!</h4>
-                <p>Your payment was processed successfully.</p>
+                <h4>Toʻlov muvaffaqiyatli amalga oshirildi!</h4>
+                <p>Toʻlovingiz muvaffaqiyatli amalga oshirildi.</p>
             </div>
         </div>
-        <div v-if="paymentState === 'failure'" class="message-container failure">
+
+        <!-- Failure Message Container -->
+        <div v-if="paymentProcess?.step === 'failure'" class="message-container failure">
             <div class="message-icon">
                 <i class="fas fa-times-circle"></i> <!-- Failure icon -->
             </div>
             <div class="message-content">
-                <h4>Payment Failed</h4>
-                <p>Payment failed. Please try again or contact support.</p>
+                <h4>Toʻlov amalga oshmadi</h4>
+                <!-- Display error message for the final payment step -->
+                <p>{{ paymentProcess.errors.payForSubscriptionError }}</p>
             </div>
         </div>
 
@@ -57,7 +79,6 @@
 
 <script setup>
 import { ref } from 'vue';
-import { defineProps } from 'vue';
 import axios from 'axios';
 import logoUrl from '@/assets/logo.png';
 
@@ -65,14 +86,22 @@ const props = defineProps({
     userId: String
 });
 
-const userId = props.userId; // Assuming the parameter is named 'userId'
+const userId = props.userId;
 const cardDetails = ref({
     number: '',
     expiry: '',
 });
 const smsCode = ref('');
-const paymentState = ref('idle'); // 'idle', 'submitting', 'awaitingConfirmation', 'success', 'failure'
-const apiUrl = 'https://3623-178-218-200-88.ngrok-free.app/api/payme';
+const paymentProcess = ref({
+    step: 'idle', // 'idle', 'submitting', 'confirming' 'awaitingConfirmation', 'success', 'failure'
+    errors: {
+        createTokenError: '',
+        verifySMSError: '',
+        verifyTokenError: '',
+        payForSubscriptionError: ''
+    }
+});
+const apiUrl = 'https://pandatvbot.inset.uz/api/payme';
 let cardId = null;
 
 const payForSubscription = async () => {
@@ -83,18 +112,19 @@ const payForSubscription = async () => {
         });
 
         if (paymentResponse.data && paymentResponse.data.success) {
-            paymentState.value = 'success';
+            paymentProcess.value.step = 'success';
         } else {
-            throw new Error(paymentResponse.message);
+            paymentProcess.value.errors.payForSubscriptionError = paymentResponse.data.message || 'Failed to process subscription payment';
+            paymentProcess.value.step = 'failure'; // Set to specific step where user can retry
         }
     } catch (error) {
-        paymentState.value = 'failure';
-        console.error('Subscription payment failed:', error.response?.data?.message || error.message);
+        paymentProcess.value.errors.payForSubscriptionError = error.response?.data?.message || error.message;
+        paymentProcess.value.step = 'failure'; // Set to specific step where user can retry
     }
 };
 
 const submitPayment = async () => {
-    paymentState.value = 'submitting';
+    paymentProcess.value.step = 'submitting';
     const [expMonth, expYear] = cardDetails.value.expiry.split('/');
     try {
         const createTokenResponse = await axios.post(`${apiUrl}/create-token`, {
@@ -107,13 +137,15 @@ const submitPayment = async () => {
             cardId = createTokenResponse.data.data.id;
             await getVerifySMS();
         } else {
-            throw new Error('Failed to create card token');
+            paymentProcess.value.errors.createTokenError = createTokenResponse.data.message || 'Failed to create card token';
+            paymentProcess.value.step = 'idle'; // Set to specific step where user can retry
         }
     } catch (error) {
-        paymentState.value = 'failure';
-        console.error('Payment submission failed:', error.response?.data?.message || error.message);
+        paymentProcess.value.errors.createTokenError = error.response?.data?.message || error.message;
+        paymentProcess.value.step = 'idle'; // Set to specific step where user can retry
     }
 };
+
 
 const getVerifySMS = async () => {
     try {
@@ -123,17 +155,22 @@ const getVerifySMS = async () => {
         });
 
         if (verifySmsResponse.data && verifySmsResponse.data.success) {
-            paymentState.value = 'awaitingConfirmation';
+            paymentProcess.value.step = 'awaitingConfirmation';
+
         } else {
-            throw new Error('Failed to send verification SMS');
+            paymentProcess.value.errors.verifySMSError = verifySmsResponse.data.message || 'Failed to send verification SMS';
+            paymentProcess.value.step = 'idle'; // Set to specific step where user can retry
         }
     } catch (error) {
-        paymentState.value = 'failure';
-        console.error('SMS verification request failed:', error.response?.data?.message || error.message);
+        paymentProcess.value.errors.verifySMSError = error.response?.data?.message || error.message;
+        paymentProcess.value.step = 'idle'; // Set to specific step where user can retry
     }
 };
 
+
 const confirmPayment = async () => {
+    paymentProcess.value.step = 'confirming'; // Set to specific step where user can retry
+
     try {
         const verifyTokenResponse = await axios.post(`${apiUrl}/verify-token`, {
             card_id: cardId,
@@ -144,11 +181,32 @@ const confirmPayment = async () => {
         if (verifyTokenResponse.data && verifyTokenResponse.data.success) {
             await payForSubscription();
         } else {
-            throw new Error('Failed to verify card');
+            paymentProcess.value.errors.verifyTokenError = verifyTokenResponse.data.message || 'Failed to verify card';
+            paymentProcess.value.step = 'awaitingConfirmation'; // Set to specific step where user can retry
         }
     } catch (error) {
-        paymentState.value = 'failure';
-        console.error('Payment confirmation failed:', error.response?.data?.message || error.message);
+        paymentProcess.value.errors.verifyTokenError = error.response?.data?.message || error.message;
+        paymentProcess.value.step = 'awaitingConfirmation'; // Set to specific step where user can retry
+    }
+};
+
+const resendPayment = async () => {
+    try {
+        const verifyTokenResponse = await axios.post(`${apiUrl}/verify-token`, {
+            card_id: cardId,
+            code: smsCode.value,
+            telegram_user_id: userId
+        });
+
+        if (verifyTokenResponse.data && verifyTokenResponse.data.success) {
+            await payForSubscription();
+        } else {
+            paymentProcess.value.errors.verifyTokenError = verifyTokenResponse.data.message || 'Failed to verify card';
+            paymentProcess.value.step = 'awaitingConfirmation'; // Set to specific step where user can retry
+        }
+    } catch (error) {
+        paymentProcess.value.errors.verifyTokenError = error.response?.data?.message || error.message;
+        paymentProcess.value.step = 'awaitingConfirmation'; // Set to specific step where user can retry
     }
 };
 </script>
@@ -228,7 +286,7 @@ const confirmPayment = async () => {
 }
 
 .submit-btn.disabled {
-    padding: 3px 15px;
+    padding: 3px 0px 3px 8px;
     opacity: .8;
     cursor: not-allowed;
 }
@@ -254,20 +312,19 @@ const confirmPayment = async () => {
 
 .input-group {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around;
     align-items: center;
-    gap: 10px;
     flex-wrap: wrap;
 }
 
 .sms-input {
     flex-grow: 1;
-    max-width: calc(100% - 120px);
+    max-width: calc(100% - 50%);
 }
 
 .confirm-btn {
     padding: 10px 15px;
-    min-width: 100px;
+    width: 35%;
     box-sizing: border-box;
 }
 
@@ -280,7 +337,6 @@ const confirmPayment = async () => {
 }
 
 .submit-btn img {
-    /* width: 32px; */
     height: 29.5px;
 }
 
@@ -369,6 +425,12 @@ const confirmPayment = async () => {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+.error-message {
+    color: #ea4335;
+    /* Red color for error messages */
+    margin-top: 10px;
 }
 </style>
   
