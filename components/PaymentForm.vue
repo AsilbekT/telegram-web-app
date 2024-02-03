@@ -33,7 +33,7 @@
         <!-- Confirmation Container -->
         <div v-if="paymentProcess?.step === 'awaitingConfirmation' || paymentProcess?.step === 'confirming'"
             class="confirmation-container">
-            <p class="confirmation-instruction">Please enter the SMS code sent to your phone.</p>
+            <p class="confirmation-instruction">Telefoningizga yuborilgan SMS kodni kiriting.</p>
             <div class="input-group">
                 <input v-model="smsCode" type="text" placeholder="SMS Code" class="input-field sms-input" v-maska
                     data-maska="######" autocomplete="cc-number" />
@@ -101,7 +101,7 @@ const paymentProcess = ref({
         payForSubscriptionError: ''
     }
 });
-const apiUrl = 'https://pandatvbot.inset.uz/api/payme';
+const apiUrl = 'https://telegrambot.pandatv.uz/api/payme';
 let cardId = null;
 
 const payForSubscription = async () => {
