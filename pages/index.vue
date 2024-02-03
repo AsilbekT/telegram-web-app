@@ -1,6 +1,6 @@
 <template>
     <div>
-        <PaymentForm :userId="userId" />
+        <PaymentForm :userId="userId" :channelId="channelId" />
         <ConfirmationModal :visible="showModal" :success="paymentSuccess" :errorMessage="errorMessage" />
     </div>
 </template>
@@ -13,6 +13,7 @@ import ConfirmationModal from '~/components/ConfirmationModal.vue';
 
 const route = useRoute();
 const userId = ref(route.query.userId);
+const channelId = ref(route.query.channel_id);
 
 const showModal = ref(false);
 const paymentSuccess = ref(false);

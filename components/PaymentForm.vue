@@ -83,17 +83,19 @@ import axios from 'axios';
 import logoUrl from '@/assets/logo.png';
 
 const props = defineProps({
-    userId: String
+    userId: String,
+    channelId: String
 });
 
 const userId = props.userId;
+const channelId = props.channelId;
 const cardDetails = ref({
     number: '',
     expiry: '',
 });
 const smsCode = ref('');
 const paymentProcess = ref({
-    step: 'idle', // 'idle', 'submitting', 'confirming' 'awaitingConfirmation', 'success', 'failure'
+    step: 'idle', // 'idle', 'submitting', 'awaitingConfirmation', 'confirming', 'success', 'failure'
     errors: {
         createTokenError: '',
         verifySMSError: '',
@@ -104,24 +106,6 @@ const paymentProcess = ref({
 const apiUrl = 'https://telegrambot.pandatv.uz/api/payme';
 let cardId = null;
 
-const payForSubscription = async () => {
-    try {
-        const paymentResponse = await axios.post(`${apiUrl}/pay-subscription`, {
-            telegram_user_id: userId,
-            card_id: cardId,
-        });
-
-        if (paymentResponse.data && paymentResponse.data.success) {
-            paymentProcess.value.step = 'success';
-        } else {
-            paymentProcess.value.errors.payForSubscriptionError = paymentResponse.data.message || 'Failed to process subscription payment';
-            paymentProcess.value.step = 'failure'; // Set to specific step where user can retry
-        }
-    } catch (error) {
-        paymentProcess.value.errors.payForSubscriptionError = error.response?.data?.message || error.message;
-        paymentProcess.value.step = 'failure'; // Set to specific step where user can retry
-    }
-};
 
 const submitPayment = async () => {
     paymentProcess.value.step = 'submitting';
@@ -138,11 +122,11 @@ const submitPayment = async () => {
             await getVerifySMS();
         } else {
             paymentProcess.value.errors.createTokenError = createTokenResponse.data.message || 'Failed to create card token';
-            paymentProcess.value.step = 'idle'; // Set to specific step where user can retry
+            paymentProcess.value.step = 'idle';
         }
     } catch (error) {
         paymentProcess.value.errors.createTokenError = error.response?.data?.message || error.message;
-        paymentProcess.value.step = 'idle'; // Set to specific step where user can retry
+        paymentProcess.value.step = 'idle';
     }
 };
 
@@ -159,17 +143,16 @@ const getVerifySMS = async () => {
 
         } else {
             paymentProcess.value.errors.verifySMSError = verifySmsResponse.data.message || 'Failed to send verification SMS';
-            paymentProcess.value.step = 'idle'; // Set to specific step where user can retry
+            paymentProcess.value.step = 'idle';
         }
     } catch (error) {
         paymentProcess.value.errors.verifySMSError = error.response?.data?.message || error.message;
-        paymentProcess.value.step = 'idle'; // Set to specific step where user can retry
+        paymentProcess.value.step = 'idle';
     }
 };
 
-
 const confirmPayment = async () => {
-    paymentProcess.value.step = 'confirming'; // Set to specific step where user can retry
+    paymentProcess.value.step = 'confirming';
 
     try {
         const verifyTokenResponse = await axios.post(`${apiUrl}/verify-token`, {
@@ -182,13 +165,38 @@ const confirmPayment = async () => {
             await payForSubscription();
         } else {
             paymentProcess.value.errors.verifyTokenError = verifyTokenResponse.data.message || 'Failed to verify card';
-            paymentProcess.value.step = 'awaitingConfirmation'; // Set to specific step where user can retry
+            paymentProcess.value.step = 'awaitingConfirmation';
         }
     } catch (error) {
         paymentProcess.value.errors.verifyTokenError = error.response?.data?.message || error.message;
-        paymentProcess.value.step = 'awaitingConfirmation'; // Set to specific step where user can retry
+        paymentProcess.value.step = 'awaitingConfirmation';
     }
 };
+
+const payForSubscription = async () => {
+    try {
+        const paymentResponse = await axios.post(`${apiUrl}/pay-subscription`, {
+            telegram_user_id: userId,
+            channel_id: channelId,
+            card_id: cardId,
+        });
+
+        if (paymentResponse.data && paymentResponse.data.success) {
+            paymentProcess.value.step = 'success';
+        } else {
+            paymentProcess.value.errors.payForSubscriptionError = paymentResponse.data.message || 'Failed to process subscription payment';
+            paymentProcess.value.step = 'failure';
+        }
+    } catch (error) {
+        paymentProcess.value.errors.payForSubscriptionError = error.response?.data?.message || error.message;
+        paymentProcess.value.step = 'failure';
+    }
+};
+
+
+
+
+
 
 const resendPayment = async () => {
     try {
@@ -202,11 +210,11 @@ const resendPayment = async () => {
             await payForSubscription();
         } else {
             paymentProcess.value.errors.verifyTokenError = verifyTokenResponse.data.message || 'Failed to verify card';
-            paymentProcess.value.step = 'awaitingConfirmation'; // Set to specific step where user can retry
+            paymentProcess.value.step = 'awaitingConfirmation';
         }
     } catch (error) {
         paymentProcess.value.errors.verifyTokenError = error.response?.data?.message || error.message;
-        paymentProcess.value.step = 'awaitingConfirmation'; // Set to specific step where user can retry
+        paymentProcess.value.step = 'awaitingConfirmation';
     }
 };
 </script>
